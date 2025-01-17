@@ -62,6 +62,7 @@ entity vp_console is
   port (
     -- System Interface -------------------------------------------------------
     is_pal_g       : in  integer;
+    low_bram       : in  std_logic;	 
     clk_i          : in  std_logic;
     clk_cpu_en_i   : in  std_logic;
     clk_vdc_en_i   : in  std_logic;
@@ -538,6 +539,7 @@ begin
   sp0256 : entity work.sp0256
   port map
   (
+    low_bram        => low_bram,
     clock_750k      => clk_750k,
 	 clock_2m5       => clk_2m5,
     reset           => not sp0256_rst, --reseta em '1'! 

@@ -112,6 +112,7 @@ use ieee.numeric_std.all;
 entity sp0256 is
 port
 (
+   low_bram     : in std_logic;
 	clock_750k   : in std_logic;
 	clock_2m5    : in std_logic;
 	reset        : in std_logic;
@@ -138,6 +139,7 @@ architecture syn of sp0256 is
   
  signal clock_750k_n  : std_logic;
  signal rom_addr 		: std_logic_vector(13 downto 0);
+ signal full_addr    : std_logic_vector(15 downto 0);
  signal rom_do   		: std_logic_vector( 7 downto 0);
  signal bank 			: std_logic_vector( 1 downto 0);
 
@@ -442,12 +444,14 @@ sum_out <= to_signed( 32767,16) when sum_out_ul >  32767 else
 			  to_signed(-32768,16) when sum_out_ul < -32768 else
 			  sum_out_ul;
 
+full_addr <= '0' & bank(0) & rom_addr when low_bram='1' else bank & rom_addr;
 			  
 sp256_003 : ENTITY work.sp256_003
 port map(
  clock  => clock_2m5,
  clken  => clock_750k_n,
- address => bank & rom_addr,
+ --address => bank & rom_addr, -- use banks in big fpgas
+ address => full_addr,   -- no banks if not 64K of bram free
  q => rom_do  
 );
 --voice_a <= bank & rom_addr;

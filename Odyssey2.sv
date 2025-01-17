@@ -151,6 +151,8 @@ localparam bit QSPI = 0;
 
 `ifdef VGA_8BIT
 localparam VGA_BITS = 8;
+`elsif VGA_4BIT
+localparam VGA_BITS = 4;
 `else
 localparam VGA_BITS = 6;
 `endif
@@ -329,6 +331,13 @@ data_io   data_io (
 );
 
 wire       PAL = status[15];
+
+`ifdef LOW_BRAM
+wire       LOW_BRAM = 1'b1;
+`else
+wire       LOW_BRAM = 1'b0;
+`endif
+
 wire       joy_swap = status[7];
 
 wire       VOICE = status[1];
@@ -355,7 +364,11 @@ wire clk_750k;
  
 pll_thevoice pll_thevoice
 ( 
-  .inclk0(CLOCK_50),
+`ifdef USE_CLOCK_50
+  .inclk0  (CLOCK_50),
+`else
+  .inclk0  (CLOCK_27),
+`endif
   .c0    (clk_750k),
   .c1    (clk_2m5)
 );
@@ -368,7 +381,11 @@ wire clk_pal, clk_ntsc;
 
 pll_pal pll_pal
 (
-	.inclk0(CLOCK_50),
+`ifdef USE_CLOCK_50
+	.inclk0  (CLOCK_50),
+`else
+	.inclk0  (CLOCK_27),
+`endif
 	.c0(clk_pal),
 	.c1(clk_ntsc),
 	.locked(pll_locked)
@@ -441,6 +458,7 @@ vp_console vp
 (
 	// System
 	.is_pal_g       (PAL),
+	.low_bram       (LOW_BRAM),
 	.clk_i          (clk_sys),
 	.clk_cpu_en_i   (clk_cpu_en),
 	.clk_vdc_en_i   (clk_vdc_en),
@@ -699,7 +717,8 @@ vga_to_greyscale vga_to_greyscale
 );
 
 
-mist_video #(.COLOR_DEPTH(8), .SD_HCNT_WIDTH(11), .OUT_COLOR_DEPTH(VGA_BITS), .BIG_OSD(BIG_OSD)) mist_video (	
+mist_video #(.COLOR_DEPTH(8), .SD_HCNT_WIDTH(11), .OUT_COLOR_DEPTH(VGA_BITS), .BIG_OSD(BIG_OSD)) mist_video (
+	
 	.clk_sys      (clk_sys    ),
 	.SPI_SCK      (SPI_SCK    ),
 	.SPI_SS3      (SPI_SS3    ),
